@@ -199,7 +199,7 @@ void loop() {
     }
 
     else if (!llIR && !lIR && !rIR && !rrIR) {
-      stop();
+      // stop();
     } else if (llIR && lIR && rIR && rrIR) {
       forward();
     }

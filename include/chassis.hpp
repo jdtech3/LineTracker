@@ -1,5 +1,7 @@
 #include <Adafruit_MotorShield.h>
 
+#include "enums.h"
+
 class Chassis {
     public:
         void setOne(Adafruit_DCMotor *motor, int speed, int direction) const;
