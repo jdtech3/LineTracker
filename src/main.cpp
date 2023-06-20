@@ -2,42 +2,19 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include <Adafruit_MotorShield.h>
 #include <hp_BH1750.h>
 #include <SPI.h>
 #include <Adafruit_BLE.h>
 #include <Adafruit_BluefruitLE_SPI.h>
 
-#define DEBUG
-#define BLUETOOTH
-
-#define LED_PIN 13
-
-#define BLUEFRUIT_SPI_CS 8
-#define BLUEFRUIT_SPI_IRQ 7
-#define BLUEFRUIT_SPI_RST 4
-
-#define LL_IR_PIN A0
-#define L_IR_PIN A1
-#define R_IR_PIN A2
-#define RR_IR_PIN A3
-
-#define IR_THRESHOLD 500
-#define LUX_THRESHOLD 3000
-
-enum SIDE { LEFT, RIGHT };
-enum MODE { GO, STOP };
-enum BLE_INPUT_MODE { COMMAND, DATA };
+#include "constants.h"
+#include "enums.h"
+#include "chassis.hpp"
 
 hp_BH1750 lightSensor;
-Adafruit_MotorShield AFMS = Adafruit_MotorShield();
-
-Adafruit_DCMotor *leftFrontMotor = AFMS.getMotor(3);
-Adafruit_DCMotor *leftBackMotor = AFMS.getMotor(4);
-Adafruit_DCMotor *rightBackMotor = AFMS.getMotor(1);
-Adafruit_DCMotor *rightFrontMotor = AFMS.getMotor(2);
-
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+
+Chassis chassis;
 
 // Modes
 
@@ -50,62 +27,38 @@ char lastCmd[65];
 int hardSpeed = 25;
 int softSpeed = 50;
 
-// -- Low level --
-
-void setOne(Adafruit_DCMotor *motor, int speed, int direction) {
-  motor->setSpeed(speed);
-  motor->run(direction);
-}
-
-void setSide(SIDE side, int speed, int direction) {
-  if (side == LEFT) {
-    setOne(leftFrontMotor, speed, direction);
-    setOne(leftBackMotor, speed, direction);
-  } else {
-    setOne(rightBackMotor, speed, direction);
-    setOne(rightFrontMotor, speed, direction);
-  }
-}
-
-void setAll(int speed, int direction) {
-  setOne(leftFrontMotor, speed, direction);
-  setOne(leftBackMotor, speed, direction);
-  setOne(rightBackMotor, speed, direction);
-  setOne(rightFrontMotor, speed, direction);
-}
-
 // -- High level
 
 void forward() {
-  setAll(255, FORWARD);
+  chassis.setAll(255, FORWARD);
 }
 void stop() {
-  setAll(0, FORWARD);
+  chassis.setAll(0, FORWARD);
 }
 
 void hardLeft() {
-  setSide(LEFT, hardSpeed, BACKWARD);
-  setSide(RIGHT, 255, FORWARD);
+  chassis.setSide(LEFT, hardSpeed, BACKWARD);
+  chassis.setSide(RIGHT, 255, FORWARD);
 }
 void hardRight() {
-  setSide(LEFT, 255, FORWARD);
-  setSide(RIGHT, hardSpeed, BACKWARD);
+  chassis.setSide(LEFT, 255, FORWARD);
+  chassis.setSide(RIGHT, hardSpeed, BACKWARD);
 }
 
 void softLeft() {
-  setSide(LEFT, softSpeed, FORWARD);
-  setSide(RIGHT, 255, FORWARD);
+  chassis.setSide(LEFT, softSpeed, FORWARD);
+  chassis.setSide(RIGHT, 255, FORWARD);
 }
 void softRight() {
-  setSide(LEFT, 255, FORWARD);
-  setSide(RIGHT, softSpeed, FORWARD);
+  chassis.setSide(LEFT, 255, FORWARD);
+  chassis.setSide(RIGHT, softSpeed, FORWARD);
 }
 
 // -- Main --
 
 void setup() {
-  AFMS.begin();
-  setAll(0, RELEASE);
+  chassis.begin(LEFT_FRONT_MOTOR_PORT, LEFT_BACK_MOTOR_PORT, RIGHT_FRONT_MOTOR_PORT, RIGHT_BACK_MOTOR_PORT);
+  stop();
 
   lightSensor.begin(BH1750_TO_GROUND);
 
@@ -129,7 +82,7 @@ void setup() {
     #endif
 
     #ifdef DEBUG
-      Serial.println("Waiting for BLE connect...");     
+      Serial.println("Waiting for BLE connect...");
     #endif
     ble.println("AT+GAPDEVNAME=JDBot");
     ble.println("ATZ");
@@ -158,7 +111,7 @@ void loop() {
         Serial.print("[BLE Recv] ");
         Serial.println(ble.buffer);
       #endif
-      
+
       if (bleInputMode == COMMAND) {
         if (strcmp(ble.buffer, "G") == 0) {
           mode = GO;
@@ -178,7 +131,7 @@ void loop() {
           strcpy(lastCmd, ble.buffer);
           ble.print("AT+BLEUARTTX=");
           ble.println("ACK: CONF SOFTSPEED");
-        } 
+        }
       }
       else {
         if (strcmp(lastCmd, "CH") == 0) {
@@ -189,7 +142,7 @@ void loop() {
 
           #ifdef DEBUG
             Serial.print("New hardSpeed: ");
-            Serial.println(hardSpeed);     
+            Serial.println(hardSpeed);
           #endif
         } else if (strcmp(lastCmd, "CS") == 0) {
           softSpeed = atoi(ble.buffer);
@@ -199,7 +152,7 @@ void loop() {
 
           #ifdef DEBUG
             Serial.print("New softSpeed: ");
-            Serial.println(softSpeed);     
+            Serial.println(softSpeed);
           #endif
         }
         bleInputMode = COMMAND;
@@ -230,7 +183,7 @@ void loop() {
 
     1110: hard left
     0111: hard right
-    
+
     */
 
     if (llIR && !lIR && !rIR && !rrIR) {
@@ -243,14 +196,14 @@ void loop() {
       softRight();
     } else if (!llIR && !lIR && !rIR && rrIR) {
       hardRight();
-    } 
-    
+    }
+
     else if (!llIR && !lIR && !rIR && !rrIR) {
       stop();
     } else if (llIR && lIR && rIR && rrIR) {
       forward();
-    } 
-    
+    }
+
     else if (!llIR && lIR && !rIR && !rrIR) {
       forward();
     } else if (!llIR && !lIR && rIR && !rrIR) {
@@ -262,13 +215,13 @@ void loop() {
     } else if (!llIR && lIR && rIR && rrIR) {
       hardRight();
     }
-    
+
     else {
       stop();
     }
 
   } else {
-    setAll(0, RELEASE);
+    stop();
 
     lightSensor.start();
     int lux = lightSensor.getLux();
