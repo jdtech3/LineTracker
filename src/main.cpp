@@ -29,6 +29,10 @@ unsigned long lastLight = 0;
 int hardSpeed = 255;
 int softSpeed = 205;
 
+int kp = 150;
+int ki = 0;
+int kd = 0;
+
 // -- High level
 
 void forward() {
@@ -133,6 +137,24 @@ void loop() {
           ble.print("AT+BLEUARTTX=");
           ble.print("ACK: CONF SOFT, CUR: ");
           ble.println(softSpeed);
+        } else if (strcmp(ble.buffer, "CP") == 0) {
+          bleInputMode = DATA;
+          strcpy(lastCmd, ble.buffer);
+          ble.print("AT+BLEUARTTX=");
+          ble.print("ACK: CONF PID-KP, CUR: ");
+          ble.println(kp);
+        } else if (strcmp(ble.buffer, "CI") == 0) {
+          bleInputMode = DATA;
+          strcpy(lastCmd, ble.buffer);
+          ble.print("AT+BLEUARTTX=");
+          ble.print("ACK: CONF PID-KI, CUR: ");
+          ble.println(ki);
+        } else if (strcmp(ble.buffer, "CD") == 0) {
+          bleInputMode = DATA;
+          strcpy(lastCmd, ble.buffer);
+          ble.print("AT+BLEUARTTX=");
+          ble.print("ACK: CONF PID-KD, CUR: ");
+          ble.println(kd);
         }
       }
       else {
@@ -141,21 +163,26 @@ void loop() {
           ble.print("AT+BLEUARTTX=");
           ble.print("ACK: CH ");
           ble.println(hardSpeed);
-
-          #ifdef DEBUG
-            Serial.print("New hardSpeed: ");
-            Serial.println(hardSpeed);
-          #endif
         } else if (strcmp(lastCmd, "CS") == 0) {
           softSpeed = atoi(ble.buffer);
           ble.print("AT+BLEUARTTX=");
           ble.print("ACK: CS ");
           ble.println(softSpeed);
-
-          #ifdef DEBUG
-            Serial.print("New softSpeed: ");
-            Serial.println(softSpeed);
-          #endif
+        } else if (strcmp(lastCmd, "CP") == 0) {
+          kp = atoi(ble.buffer);
+          ble.print("AT+BLEUARTTX=");
+          ble.print("ACK: CP ");
+          ble.println(kp);
+        } else if (strcmp(lastCmd, "CI") == 0) {
+          ki = atoi(ble.buffer);
+          ble.print("AT+BLEUARTTX=");
+          ble.print("ACK: CI ");
+          ble.println(ki);
+        } else if (strcmp(lastCmd, "CD") == 0) {
+          kd = atoi(ble.buffer);
+          ble.print("AT+BLEUARTTX=");
+          ble.print("ACK: CD ");
+          ble.println(kd);
         }
         bleInputMode = COMMAND;
       }
@@ -164,63 +191,71 @@ void loop() {
 
   if (mode == GO) {
 
-    bool llIR = analogRead(LL_IR_PIN) > IR_THRESHOLD;     // true: black detected
-    bool lIR = analogRead(L_IR_PIN) > IR_THRESHOLD;
-    bool rIR = analogRead(R_IR_PIN) > IR_THRESHOLD;
-    bool rrIR = analogRead(RR_IR_PIN) > IR_THRESHOLD;
+    #ifdef PID
 
-    /* Possible combos: (1 is black)
+      tick(chassis, kp, ki, kd);
 
-    1000: hard left
-    1100: left
-    0110: forward
-    0011: right
-    0001: hard right
+    #else
 
-    0000: stop
-    1111: forward (trap?)
+      bool llIR = analogRead(LL_IR_PIN) > IR_THRESHOLD;     // true: black detected
+      bool lIR = analogRead(L_IR_PIN) > IR_THRESHOLD;
+      bool rIR = analogRead(R_IR_PIN) > IR_THRESHOLD;
+      bool rrIR = analogRead(RR_IR_PIN) > IR_THRESHOLD;
 
-    0100: forward (idk)
-    0010: forward (idk)
+      /* Possible combos: (1 is black)
 
-    1110: hard left
-    0111: hard right
+      1000: hard left
+      1100: left
+      0110: forward
+      0011: right
+      0001: hard right
 
-    */
+      0000: no op (trap?)
+      1111: forward (trap?)
 
-    if (llIR && !lIR && !rIR && !rrIR) {
-      hardLeft();
-    } else if (llIR && lIR && !rIR && !rrIR) {
-      softLeft();
-    } else if (!llIR && lIR && rIR && !rrIR) {
-      forward();
-    } else if (!llIR && !lIR && rIR && rrIR) {
-      softRight();
-    } else if (!llIR && !lIR && !rIR && rrIR) {
-      hardRight();
-    }
+      0100: forward (idk)
+      0010: forward (idk)
 
-    else if (!llIR && !lIR && !rIR && !rrIR) {
-      // stop();
-    } else if (llIR && lIR && rIR && rrIR) {
-      forward();
-    }
+      1110: hard left
+      0111: hard right
 
-    else if (!llIR && lIR && !rIR && !rrIR) {
-      forward();
-    } else if (!llIR && !lIR && rIR && !rrIR) {
-      forward();
-    }
+      */
 
-    else if (llIR && lIR && rIR && !rrIR) {
-      hardLeft();
-    } else if (!llIR && lIR && rIR && rrIR) {
-      hardRight();
-    }
+      if (llIR && !lIR && !rIR && !rrIR) {
+        hardLeft();
+      } else if (llIR && lIR && !rIR && !rrIR) {
+        softLeft();
+      } else if (!llIR && lIR && rIR && !rrIR) {
+        forward();
+      } else if (!llIR && !lIR && rIR && rrIR) {
+        softRight();
+      } else if (!llIR && !lIR && !rIR && rrIR) {
+        hardRight();
+      }
 
-    else {
-      stop();
-    }
+      else if (!llIR && !lIR && !rIR && !rrIR) {
+        // stop();
+      } else if (llIR && lIR && rIR && rrIR) {
+        forward();
+      }
+
+      else if (!llIR && lIR && !rIR && !rrIR) {
+        forward();
+      } else if (!llIR && !lIR && rIR && !rrIR) {
+        forward();
+      }
+
+      else if (llIR && lIR && rIR && !rrIR) {
+        hardLeft();
+      } else if (!llIR && lIR && rIR && rrIR) {
+        hardRight();
+      }
+
+      else {
+        stop();
+      }
+
+  #endif
 
   } else {
     stop();

@@ -5,6 +5,7 @@
 #include <Adafruit_MotorShield.h>
 
 #include "enums.h"
+#include "constants.h"
 
 class Chassis {
     public:

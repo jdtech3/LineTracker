@@ -4,6 +4,7 @@
 
 #define DEBUG
 #define BLUETOOTH
+// #define PID
 
 #define BLUEFRUIT_SPI_CS 8
 #define BLUEFRUIT_SPI_IRQ 7
