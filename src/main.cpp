@@ -22,11 +22,12 @@ Chassis chassis;
 MODE mode = STOP;
 BLE_INPUT_MODE bleInputMode = COMMAND;
 char lastCmd[65];
+unsigned long lastLight = 0;
 
 // Tuning params
 
-int hardSpeed = 510;
-int softSpeed = 0;
+int hardSpeed = 255;
+int softSpeed = 205;
 
 // -- High level
 
@@ -58,12 +59,14 @@ void setup() {
   stop();
 
   lightSensor.begin(BH1750_TO_GROUND);
+  lightSensor.calibrateTiming();
+  lightSensor.start();
 
   #ifdef DEBUG
     // while (!Serial);
     delay(2500);
 
-    Serial.begin(9600);
+    Serial.begin(115200);
     Serial.println("JDLineFollow - DEBUG enabled!");
   #endif
 
@@ -89,11 +92,11 @@ void setup() {
     #endif
   #endif
 
-  pinMode(LED_PIN, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
   for (int i = 0; i < 5; i++) {
-    digitalWrite(LED_PIN, HIGH);
+    digitalWrite(LED_BUILTIN, HIGH);
     delay(100);
-    digitalWrite(LED_PIN, LOW);
+    digitalWrite(LED_BUILTIN, LOW);
     delay(100);
   }
 }
@@ -221,10 +224,24 @@ void loop() {
 
   } else {
     stop();
+  }
+
+  if (lightSensor.hasValue()) {
+
+    if (lastLight == 0 || millis() - lastLight > LIGHT_DEBOUNCE_MS) {   // debounce!
+      float lux = lightSensor.getLux();
+
+      if (lux > LUX_THRESHOLD) {
+        lastLight = millis();
+        mode = mode == STOP ? GO : STOP;
+
+        #ifdef DEBUG
+          Serial.print("Mode switched to: ");
+          Serial.println(mode == STOP ? "STOP" : "GO");
+        #endif
+      } 
+    }
 
     lightSensor.start();
-    int lux = lightSensor.getLux();
-
-    if (lux > LUX_THRESHOLD) mode = GO;
   }
 }

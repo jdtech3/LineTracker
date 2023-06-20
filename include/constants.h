@@ -5,8 +5,6 @@
 #define DEBUG
 #define BLUETOOTH
 
-#define LED_PIN 13
-
 #define BLUEFRUIT_SPI_CS 8
 #define BLUEFRUIT_SPI_IRQ 7
 #define BLUEFRUIT_SPI_RST 4
@@ -23,6 +21,8 @@
 
 #define IR_THRESHOLD 500
 #define LUX_THRESHOLD 3000
+
+#define LIGHT_DEBOUNCE_MS 3000
 
 
 #endif  // #ifndef _CONSTANTS_H
