@@ -1,5 +1,5 @@
-#ifndef _ENUMS_HPP
-#define _ENUMS_HPP
+#ifndef _ENUMS_H
+#define _ENUMS_H
 
 
 enum SIDE { LEFT, RIGHT };
@@ -7,4 +7,4 @@ enum MODE { GO, STOP };
 enum BLE_INPUT_MODE { COMMAND, DATA };
 
 
-#endif  // #ifndef _ENUMS_HPP
+#endif  // #ifndef _ENUMS_H

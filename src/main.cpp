@@ -10,6 +10,7 @@
 #include "constants.h"
 #include "enums.h"
 #include "chassis.hpp"
+#include "controller.hpp"
 
 hp_BH1750 lightSensor;
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);

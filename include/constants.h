@@ -1,5 +1,5 @@
-#ifndef _CONSTANTS_HPP
-#define _CONSTANTS_HPP
+#ifndef _CONSTANTS_H
+#define _CONSTANTS_H
 
 
 #define DEBUG
@@ -25,4 +25,4 @@
 #define LUX_THRESHOLD 3000
 
 
-#endif  // #ifndef _CONSTANTS_HPP
+#endif  // #ifndef _CONSTANTS_H
