@@ -8,7 +8,7 @@
 
 class Chassis {
     public:
-        void begin(int leftFrontMotorPißn, int leftBackMotorPin, int rightFrontMotorPin, int rightBackMotorPin);
+        void begin(int leftFrontMotorPin, int leftBackMotorPin, int rightFrontMotorPin, int rightBackMotorPin);
         void setOne(Adafruit_DCMotor *motor, int speed, int direction) const;
         void setSide(SIDE side, int speed, int direction);
         void setAll(int speed, int direction);

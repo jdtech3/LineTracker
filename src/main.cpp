@@ -25,34 +25,30 @@ char lastCmd[65];
 
 // Tuning params
 
-int hardSpeed = 25;
-int softSpeed = 50;
+int hardSpeed = 510;
+int softSpeed = 0;
 
 // -- High level
 
 void forward() {
-  chassis.setAll(255, FORWARD);
+  move(chassis, 0);
 }
 void stop() {
   chassis.setAll(0, FORWARD);
 }
 
 void hardLeft() {
-  chassis.setSide(LEFT, hardSpeed, BACKWARD);
-  chassis.setSide(RIGHT, 255, FORWARD);
+  move(chassis, -hardSpeed);
 }
 void hardRight() {
-  chassis.setSide(LEFT, 255, FORWARD);
-  chassis.setSide(RIGHT, hardSpeed, BACKWARD);
+  move(chassis, hardSpeed);
 }
 
 void softLeft() {
-  chassis.setSide(LEFT, softSpeed, FORWARD);
-  chassis.setSide(RIGHT, 255, FORWARD);
+  move(chassis, -softSpeed);
 }
 void softRight() {
-  chassis.setSide(LEFT, 255, FORWARD);
-  chassis.setSide(RIGHT, softSpeed, FORWARD);
+  move(chassis, softSpeed);
 }
 
 // -- Main --
@@ -126,12 +122,14 @@ void loop() {
           bleInputMode = DATA;
           strcpy(lastCmd, ble.buffer);
           ble.print("AT+BLEUARTTX=");
-          ble.println("ACK: CONF HARDSPEED");
+          ble.print("ACK: CONF HARD, CUR: ");
+          ble.println(hardSpeed);
         } else if (strcmp(ble.buffer, "CS") == 0) {
           bleInputMode = DATA;
           strcpy(lastCmd, ble.buffer);
           ble.print("AT+BLEUARTTX=");
-          ble.println("ACK: CONF SOFTSPEED");
+          ble.print("ACK: CONF SOFT, CUR: ");
+          ble.println(softSpeed);
         }
       }
       else {
