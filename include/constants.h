@@ -15,6 +15,9 @@
 #define R_IR_PIN A2
 #define RR_IR_PIN A3
 
+#define GREEN_LED_PIN 5
+#define RED_LED_PIN 6
+
 #define LEFT_FRONT_MOTOR_PORT 3
 #define LEFT_BACK_MOTOR_PORT 4
 #define RIGHT_FRONT_MOTOR_PORT 2

@@ -26,8 +26,8 @@ unsigned long lastLight = 0;
 
 // Tuning params
 
-int hardSpeed = 255;
-int softSpeed = 205;
+int hardSpeed = 500;
+int softSpeed = 300;
 
 int kp = 150;
 int ki = 0;
@@ -97,15 +97,31 @@ void setup() {
   #endif
 
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(GREEN_LED_PIN, OUTPUT);
+  pinMode(RED_LED_PIN, OUTPUT);
+
   for (int i = 0; i < 5; i++) {
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(GREEN_LED_PIN, HIGH);
+    digitalWrite(RED_LED_PIN, HIGH);
     delay(100);
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(GREEN_LED_PIN, LOW);
+    digitalWrite(RED_LED_PIN, LOW);
     delay(100);
   }
 }
 
 void loop() {
+  switch (mode) {
+    case GO:
+      digitalWrite(GREEN_LED_PIN, HIGH);
+      digitalWrite(RED_LED_PIN, LOW);
+      break;
+    case STOP:
+      digitalWrite(GREEN_LED_PIN, LOW);
+      digitalWrite(RED_LED_PIN, HIGH);
+      break;
+  }
+
   #ifdef BLUETOOTH
     ble.println("AT+BLEUARTRX");
     ble.readline();
@@ -252,7 +268,7 @@ void loop() {
       }
 
       else {
-        stop();
+        // stop();
       }
 
   #endif
