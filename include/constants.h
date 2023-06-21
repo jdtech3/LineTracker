@@ -2,8 +2,8 @@
 #define _CONSTANTS_H
 
 
-#define DEBUG
-#define BLUETOOTH
+// #define DEBUG
+// #define BLUETOOTH
 // #define PID
 
 #define BLUEFRUIT_SPI_CS 8
@@ -27,6 +27,11 @@
 #define LUX_THRESHOLD 3000
 
 #define LIGHT_DEBOUNCE_MS 3000
+
+#define HARD_SPEED_DEFAULT 510
+#define SOFT_SPEED_DEFAULT 255
+#define HARD_SPEED_FAST_DEFAULT 255
+#define SOFT_SPEED_FAST_DEFAULT 200
 
 
 #endif  // #ifndef _CONSTANTS_H

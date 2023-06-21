@@ -23,11 +23,13 @@ MODE mode = STOP;
 BLE_INPUT_MODE bleInputMode = COMMAND;
 char lastCmd[65];
 unsigned long lastLight = 0;
+int lightsSeen = 0;
+unsigned long startTime = 0;
 
 // Tuning params
 
-int hardSpeed = 500;
-int softSpeed = 300;
+int hardSpeed = HARD_SPEED_DEFAULT;
+int softSpeed = SOFT_SPEED_DEFAULT;
 
 int kp = 150;
 int ki = 0;
@@ -111,10 +113,23 @@ void setup() {
 }
 
 void loop() {
+  if (lightsSeen == 1) {
+    if (millis() - startTime > 11000 && mode == GO) mode = FAST;
+    if (millis() - startTime > 20500 && mode == FAST) mode = GO;
+  }
+
   switch (mode) {
     case GO:
+      hardSpeed = HARD_SPEED_DEFAULT;
+      softSpeed = SOFT_SPEED_DEFAULT;
       digitalWrite(GREEN_LED_PIN, HIGH);
       digitalWrite(RED_LED_PIN, LOW);
+      break;
+    case FAST:
+      hardSpeed = HARD_SPEED_FAST_DEFAULT;
+      softSpeed = SOFT_SPEED_FAST_DEFAULT;
+      digitalWrite(GREEN_LED_PIN, HIGH);
+      digitalWrite(RED_LED_PIN, HIGH);
       break;
     case STOP:
       digitalWrite(GREEN_LED_PIN, LOW);
@@ -205,7 +220,7 @@ void loop() {
     }
   #endif
 
-  if (mode == GO) {
+  if (mode == GO || mode == FAST) {
 
     #ifdef PID
 
@@ -251,6 +266,7 @@ void loop() {
 
       else if (!llIR && !lIR && !rIR && !rrIR) {
         // stop();
+        if (lightsSeen == 1 && millis() - startTime < 3250) forward();
       } else if (llIR && lIR && rIR && rrIR) {
         forward();
       }
@@ -283,6 +299,8 @@ void loop() {
       float lux = lightSensor.getLux();
 
       if (lux > LUX_THRESHOLD) {
+        if (lightsSeen == 0) startTime = millis();
+
         lastLight = millis();
         mode = mode == STOP ? GO : STOP;
 
@@ -290,6 +308,8 @@ void loop() {
           Serial.print("Mode switched to: ");
           Serial.println(mode == STOP ? "STOP" : "GO");
         #endif
+
+        lightsSeen++;
       } 
     }
 

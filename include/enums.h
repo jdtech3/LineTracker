@@ -3,7 +3,7 @@
 
 
 enum SIDE { LEFT, RIGHT };
-enum MODE { GO, STOP };
+enum MODE { GO, FAST, STOP };
 enum BLE_INPUT_MODE { COMMAND, DATA };
 
 
