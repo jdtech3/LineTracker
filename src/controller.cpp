@@ -112,7 +112,6 @@ void tick(Chassis chassis, int kp, int ki, int kd) {
     d = newError - error;
     
     int direction = kp*newError + ki*i + kd*d;
-    // int direction = kp*newError;
 
     move(chassis, direction);
 

@@ -2,8 +2,8 @@
 #define _CONSTANTS_H
 
 
-// #define DEBUG
-// #define BLUETOOTH
+#define DEBUG
+#define BLUETOOTH
 // #define PID
 
 #define BLUEFRUIT_SPI_CS 8
